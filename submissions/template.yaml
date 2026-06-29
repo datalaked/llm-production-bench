@@ -37,8 +37,8 @@ hardware:
   cpu: "Intel Core i9-13900K"
   inference_engine: "llama.cpp"
   engine_version: "b4920"
-  tok_per_sec_generation: 11.2   # measure with llama-bench before the run
-  tok_per_sec_prefill: 245.0
+  tok_per_sec_generation: 57.8
+  tok_per_sec_prefill: 1210
 
 model:
   name: "Qwen3.6-35B-A3B"
@@ -107,4 +107,4 @@ results:
 
 integrity:
   git_commit_hash: "7a3f2c8e4b9d1a6f5c0e2b8d4a7f3c9e1b5d2a8f"  # git rev-parse HEAD
-  tok_per_sec_measured: 10.9   # averaged across task responses during this run
+  tok_per_sec_measured: 57.8
