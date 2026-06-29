@@ -105,6 +105,8 @@ Tasks are scored **0–5** by a human reviewer using the rubric in [`scoring/rub
 
 Submissions are YAML files validated by a schema and a CI check. One file = one model on one codebase.
 
+Read [INTEGRITY.md](INTEGRITY.md) for how we protect result quality and what we can't prevent.
+
 ### Quick start
 
 ```bash
