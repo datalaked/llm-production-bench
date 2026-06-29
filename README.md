@@ -166,8 +166,8 @@ See [`CONTRIBUTING.md`](CONTRIBUTING.md) for the full submission guide.
 
 | Model | Type | Hardware | Score |
 |-------|------|----------|-------|
-| Claude Sonnet 4.6 | Cloud API | Anthropic API | **58 / 65** |
-| Qwen3.6-35B-A3B-Q8 | Local | ASUS GX10, llama.cpp | **50 / 65** |
+| Claude Sonnet 4.6 | Cloud API | Anthropic API | **63 / 65** |
+| Qwen3.6-35B-A3B-Q8 | Local | ASUS GX10, llama.cpp | **55 / 65** |
 
 13 tasks across all four categories (A–D). Both runs used Claude Code as the agent framework.
 

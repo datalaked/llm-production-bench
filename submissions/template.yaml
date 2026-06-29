@@ -31,9 +31,9 @@ codebase:
 
 hardware:
   device: "ASUS GX10"
-  memory_gb: 24       # GPU VRAM
-  memory_type: "vram"
-  gpu: "NVIDIA GeForce RTX 4090 (24GB GDDR6X)"
+  memory_gb: 128      # unified memory (Grace Blackwell chip)
+  memory_type: "unified"
+  gpu: "NVIDIA GB10 Grace Blackwell"
   cpu: "Intel Core i9-13900K"
   inference_engine: "llama.cpp"
   engine_version: "b4920"
@@ -55,116 +55,55 @@ agent:
 
 results:
   A1:
-    time_seconds: 187
-    quality_1_to_5: 3
-    notes: >
-      Correctly identified FastAPI + service layer and described the three-layer
-      structure. Missed the async job queue integration: attributed background
-      tasks to Celery when they're actually dispatched via RQ (Redis Queue).
-      Hallucinated one module path (/api/core/events.py does not exist).
+    time_seconds: 68
+    quality_1_to_5: 4
 
   A2:
-    time_seconds: 145
+    time_seconds: 602
     quality_1_to_5: 4
-    notes: >
-      Strong chronological migration audit — correctly sequenced 142 of 145
-      migrations and flagged the two schema-breaking changes. Missed the three
-      squash migrations from 2024-Q1 that replaced earlier sequences.
 
   A3:
-    time_seconds: 98
-    quality_1_to_5: 3
-    notes: >
-      Per-version summaries were factually accurate but stayed surface-level.
-      Did not flag the breaking API changes introduced in v2.4 and v3.0 that
-      are prominently noted in the CHANGELOG comments.
+    quality_1_to_5: 5
 
   B1:
-    time_seconds: 234
+    time_seconds: 385
     quality_1_to_5: 4
-    notes: >
-      Well-structured docstring with correct parameter types and descriptions.
-      Missed the 422 Unprocessable Content response that occurs when the
-      tenant_id header is present but references a suspended account.
 
   B2:
-    time_seconds: 312
+    time_seconds: 350
     quality_1_to_5: 3
-    notes: >
-      Found 6 of 8 missing Pydantic validators. Two regex-based validators
-      were added but had subtle logic errors: one allowed empty strings,
-      one rejected valid international phone formats.
 
   B3:
-    time_seconds: 567
-    quality_1_to_5: 2
-    notes: >
-      Correctly identified the three duplicated code blocks but extracted the
-      shared utility to utils.py instead of core/shared.py (the established
-      location for cross-module utilities). Missed two call sites in
-      tasks/billing.py. The extracted function has a subtle behavior change
-      due to keyword argument ordering.
+    time_seconds: 616
+    quality_1_to_5: 4
 
   C1:
-    time_seconds: 445
+    time_seconds: 34
     quality_1_to_5: 3
-    notes: >
-      Correctly diagnosed the root cause as a race condition. Attributed it
-      to the task scheduler when it is actually in the DB transaction retry
-      logic. Fix recommendation was directionally correct but not specific
-      enough to implement without further investigation.
 
   C2:
-    time_seconds: 389
-    quality_1_to_5: 3
-    notes: >
-      Followed the ADR template format correctly. Decision rationale was
-      generic ("this approach provides better scalability") rather than
-      grounded in the specific constraints discussed. Did not reference the
-      two existing ADRs (ADR-012, ADR-019) that directly inform this decision.
+    time_seconds: 180
+    quality_1_to_5: 5
 
   C3:
-    time_seconds: 278
+    time_seconds: 171
     quality_1_to_5: 4
-    notes: >
-      Solid migration risk analysis. Correctly identified the nullable-to-not-null
-      constraint change and the missing default value risk. Flagged the
-      backward-compatibility window needed before deploying the application
-      change. Did not flag the partial index on tenant_id that will lock
-      during the migration on large tenants.
 
   D1:
-    time_seconds: 123
-    quality_1_to_5: 4
-    notes: >
-      Correct conventional commit format (type, scope, summary under 72 chars).
-      Body was slightly verbose with unnecessary implementation details that
-      belong in code comments rather than the commit message.
+    time_seconds: 49
+    quality_1_to_5: 5
 
   D2:
-    time_seconds: 892
-    quality_1_to_5: 2
-    notes: >
-      Fixed 14 of 23 `any` usages. Introduced 3 TypeScript compilation errors
-      in src/components/DataGrid.tsx and src/hooks/useFilters.ts. Missed all
-      component prop types (9 remaining `any`s in interface definitions).
+    time_seconds: 214
+    quality_1_to_5: 5
 
   D3:
-    time_seconds: 1847
-    quality_1_to_5: 2
-    notes: >
-      Model + Alembic migration implemented correctly and follows conventions.
-      API endpoint skeleton present but validation and serialization incomplete.
-      No tests added. Frontend component not attempted. Feature is not functional
-      end-to-end within the time window.
+    time_seconds: 615
+    quality_1_to_5: 4
 
   D4:
     time_seconds: 167
-    quality_1_to_5: 3
-    notes: >
-      Extracted the key sections from the 40-page document accurately. Missed
-      the financial projections table entirely (it is an embedded image, not
-      parsed text). Summary was clean and directly usable for the stated goal.
+    quality_1_to_5: 5
 
 integrity:
   git_commit_hash: "7a3f2c8e4b9d1a6f5c0e2b8d4a7f3c9e1b5d2a8f"  # git rev-parse HEAD

@@ -15,9 +15,9 @@ codebase:
 
 hardware:
   device: "ASUS GX10"
-  memory_gb: 64       # local system RAM; inference is remote (Anthropic API)
-  memory_type: "system"
-  gpu: "NVIDIA GeForce RTX 4090 (24GB GDDR6X)"
+  memory_gb: 128      # unified memory (Grace Blackwell chip)
+  memory_type: "unified"
+  gpu: "NVIDIA GB10 Grace Blackwell"
   cpu: "Intel Core i9-13900K"
   inference_engine: "Claude API"
   engine_version: "claude-sonnet-4-6-20251001"
@@ -37,132 +37,55 @@ agent:
 
 results:
   A1:
-    time_seconds: 45
-    quality_1_to_5: 4
-    notes: >
-      Accurate and specific: correctly identified the three-layer architecture,
-      named real module paths, and traced a request through the auth middleware
-      to the service layer to SQLAlchemy. Missed that the webhook retry worker
-      shares the same Celery queue as background report generation — a non-obvious
-      coupling only visible by reading both task definitions.
+    time_seconds: 117
+    quality_1_to_5: 5
 
   A2:
-    time_seconds: 38
+    time_seconds: 123
     quality_1_to_5: 5
-    notes: >
-      Excellent migration audit. Correctly sequenced all 145 migrations including
-      the three 2024-Q1 squash sequences. Flagged both schema-breaking changes
-      (the tenant_id NOT NULL constraint in m0089 and the enum type change in
-      m0112) and explained the data migration risk for each. Output was directly
-      useful as a release-review artifact.
 
   A3:
-    time_seconds: 29
     quality_1_to_5: 4
-    notes: >
-      Per-version summaries were accurate with specific feature names and PR
-      references. Flagged the breaking changes in v2.4 and v3.0. Slightly
-      verbose in the v2.x section — consolidated 14 patch releases into a single
-      summary that was less detailed than the others.
 
   B1:
-    time_seconds: 52
+    time_seconds: 83
     quality_1_to_5: 5
-    notes: >
-      Docstring documented all parameters with correct types, described the
-      endpoint's business logic including the tenant isolation check, and
-      correctly listed all HTTP response codes including the non-obvious 409
-      Conflict returned when a duplicate slug is submitted. Exactly what a
-      senior engineer would write.
 
   B2:
-    time_seconds: 67
-    quality_1_to_5: 4
-    notes: >
-      Found all 8 missing Pydantic validators and added them with appropriate
-      error messages following the project's existing validator style. One
-      regex for international phone numbers was slightly more permissive than
-      the existing patterns in the codebase (allows leading spaces).
+    time_seconds: 280
+    quality_1_to_5: 5
 
   B3:
-    time_seconds: 143
-    quality_1_to_5: 4
-    notes: >
-      Correctly identified all three duplicated code blocks and extracted them
-      to core/shared.py — the right module. Found all 5 call sites including
-      the two in tasks/billing.py. Return type hint used `Optional[str]` where
-      the rest of the codebase uses `str | None` (minor style inconsistency).
+    time_seconds: 399
+    quality_1_to_5: 5
 
   C1:
-    time_seconds: 89
-    quality_1_to_5: 4
-    notes: >
-      Correctly identified the race condition in the DB transaction retry logic
-      and attributed it to the correct component. Fix recommendation was specific
-      and implementable (use SELECT FOR UPDATE SKIP LOCKED). Did not identify
-      the secondary symptom: the retry produces duplicate webhook deliveries
-      because the idempotency check happens before the lock is acquired.
+    time_seconds: 349
+    quality_1_to_5: 5
 
   C2:
-    time_seconds: 76
-    quality_1_to_5: 4
-    notes: >
-      Followed the project's ADR template exactly, referenced ADR-012 and
-      ADR-019 by name, and grounded the decision rationale in the specific
-      constraints (existing Redis infrastructure, no Kafka budget). Context
-      and consequences sections were specific and accurate. Status was set to
-      "Proposed" rather than "Accepted" — a minor but correct choice given the
-      ADR was not yet reviewed.
+    time_seconds: 281
+    quality_1_to_5: 5
 
   C3:
-    time_seconds: 61
+    time_seconds: 290
     quality_1_to_5: 5
-    notes: >
-      Outstanding migration risk analysis. Identified all three risks: the
-      nullable-to-not-null constraint change, the missing default value window,
-      and the partial index on tenant_id that will acquire an ACCESS EXCLUSIVE
-      lock on the large tenant_events table during the migration. Recommended
-      CREATE INDEX CONCURRENTLY as the mitigation. Output was immediately
-      actionable for the deployment plan.
 
   D1:
-    time_seconds: 33
+    time_seconds: 10
     quality_1_to_5: 5
-    notes: >
-      Perfect conventional commit. Correct type (fix), scope (billing), summary
-      under 72 characters, body that explains the root cause and references the
-      GitHub issue. Tone and level of detail matched the existing commit history
-      exactly.
 
   D2:
-    time_seconds: 218
-    quality_1_to_5: 3
-    notes: >
-      Fixed 19 of 23 `any` usages. Introduced one TypeScript error in a complex
-      generic in src/hooks/useFilters.ts (union type narrowing issue). Correctly
-      left 4 remaining as `unknown` with a comment explaining why inference
-      breaks at that boundary. The 4 component prop `any` types in
-      src/components/DataGrid.tsx were not addressed.
+    time_seconds: 79
+    quality_1_to_5: 4
 
   D3:
-    time_seconds: 487
-    quality_1_to_5: 4
-    notes: >
-      Complete feature implementation: SQLAlchemy model, Alembic migration,
-      FastAPI endpoint with Pydantic schemas, pytest tests following the
-      existing factory-based fixture pattern, and React component with TypeScript
-      types. Tests cover the happy path and the two main error cases. Missed
-      the row-level tenant isolation check that every other write endpoint
-      includes — would have been caught in code review but is a meaningful gap.
+    time_seconds: 140
+    quality_1_to_5: 5
 
   D4:
-    time_seconds: 44
+    time_seconds: 62
     quality_1_to_5: 5
-    notes: >
-      Complete and accurate extraction from the 40-page PDF including all
-      sections, the financial projections table, and the appendix data.
-      Output was structured as a JSON object matching the schema we requested.
-      Directly usable with no post-processing needed.
 
 integrity:
   git_commit_hash: "a4e7c2f9b3d8e1a5f0c4b7d2e9a3f6c1b8d5e2a7"  # git rev-parse HEAD in codebase
