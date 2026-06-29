@@ -171,7 +171,12 @@ See [`CONTRIBUTING.md`](CONTRIBUTING.md) for the full submission guide.
 
 13 tasks across all four categories (A–D). Both runs used Claude Code as the agent framework.
 
-Full write-up and per-task breakdowns: [LinkedIn series — link coming]
+Full write-up and per-task breakdowns:
+
+- [Post 1 — Categories A & B (reading + targeted changes)](https://www.linkedin.com/pulse/we-ran-same-coding-agent-two-models-heres-what-6-real-plamen-florov-c1cte)
+- [Post 2 — Categories C & D (reasoning + production work), full scoring](https://www.linkedin.com/pulse/after-12-benchmark-tasks-we-know-exactly-when-use-local-plamen-florov-xacgf)
+- [Post 3 — Dense vs MoE architecture analysis + OpenAI paper comparison](https://www.linkedin.com/feed/update/urn:li:activity:7476375907247714304/)
+- [Post 4 — Methodology deep-dive + this GitHub repo](https://www.linkedin.com/feed/update/urn:li:activity:7476574762547187712/)
 
 Detailed submissions: [`submissions/results/datalaked-2026-06.yaml`](submissions/results/datalaked-2026-06.yaml) (Claude Sonnet 4.6) · [`submissions/template.yaml`](submissions/template.yaml) (Qwen3.6-35B-A3B-Q8)
 
