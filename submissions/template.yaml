@@ -31,13 +31,13 @@ codebase:
 
 hardware:
   device: "ASUS GX10"
-  memory_gb: 24       # GPU VRAM; model offloads ~12GB to 64GB DDR5 system RAM
-  memory_type: "ram+vram"
+  memory_gb: 24       # GPU VRAM
+  memory_type: "vram"
   gpu: "NVIDIA GeForce RTX 4090 (24GB GDDR6X)"
   cpu: "Intel Core i9-13900K"
-  inference_engine: "Ollama"
-  engine_version: "0.9.0"
-  tok_per_sec_generation: 11.2   # measured with ollama run before the benchmark
+  inference_engine: "llama.cpp"
+  engine_version: "b4920"
+  tok_per_sec_generation: 11.2   # measure with llama-bench before the run
   tok_per_sec_prefill: 245.0
 
 model:
@@ -45,7 +45,7 @@ model:
   architecture: moe              # mixture-of-experts: 35B total, 3B active
   total_params_b: 35.0
   active_params_b: 3.0           # required for MoE models
-  quant: "Q8_0"                  # ~35GB on disk; CPU offloading required
+  quant: "Q8_0"                  # ~35GB on disk
   context_size_k: 128
   thinking_mode: true            # Qwen3.6 extended thinking enabled via /think
 

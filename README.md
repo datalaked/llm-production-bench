@@ -35,7 +35,7 @@ A model that scores 90% on HumanEval may still struggle to write a meaningful do
 The benchmark controls for the **agent framework** and varies only the **model**.
 
 - **Constant:** [Claude Code](https://claude.ai/code) as the agent framework (same tools, same system prompt, same working directory)
-- **Variable:** The underlying model (Claude Opus 4.8, Claude Sonnet 4.6, GPT-4o, Gemini 2.5 Pro, etc.)
+- **Variable:** The underlying model (any model reachable via Claude Code or LiteLLM — cloud API or local inference)
 
 This isolates model capability from agent scaffolding. You run the same tasks, with the same agent, on the same codebase — and swap only the model underneath.
 
@@ -162,9 +162,18 @@ See [`CONTRIBUTING.md`](CONTRIBUTING.md) for the full submission guide.
 
 ## First Results
 
-> Results from the first benchmark run will be published here.
-> 
-> **[Coming soon]** — Initial results across Claude Opus 4.8, Claude Sonnet 4.6, GPT-4o, and Gemini 2.5 Pro on a production Django + React codebase.
+**Codebase:** FastAPI + React + PostgreSQL — 145 Alembic migrations, 49 API routers, multi-tenant SaaS architecture.
+
+| Model | Type | Hardware | Score |
+|-------|------|----------|-------|
+| Claude Sonnet 4.6 | Cloud API | Anthropic API | **58 / 65** |
+| Qwen3.6-35B-A3B-Q8 | Local | ASUS GX10, llama.cpp | **50 / 65** |
+
+13 tasks across all four categories (A–D). Both runs used Claude Code as the agent framework.
+
+Full write-up and per-task breakdowns: [LinkedIn series — link coming]
+
+Detailed submissions: [`submissions/results/datalaked-2026-06.yaml`](submissions/results/datalaked-2026-06.yaml) (Claude Sonnet 4.6) · [`submissions/template.yaml`](submissions/template.yaml) (Qwen3.6-35B-A3B-Q8)
 
 ---
 
