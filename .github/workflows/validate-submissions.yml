@@ -1,0 +1,28 @@
+name: Validate Submissions
+
+on:
+  pull_request:
+    paths:
+      - "submissions/results/**"
+
+jobs:
+  validate:
+    name: Validate benchmark submissions
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install -r submissions/requirements.txt
+
+      - name: Validate all submissions
+        run: python submissions/validate.py submissions/results/*.yaml

@@ -1,0 +1,267 @@
+$schema: "http://json-schema.org/draft-07/schema#"
+title: "LLM Production Bench Submission"
+description: >
+  Schema for a single benchmark run. One file = one model on one codebase.
+  Run validate.py before submitting a PR.
+type: object
+required:
+  - metadata
+  - codebase
+  - hardware
+  - model
+  - agent
+  - results
+  - integrity
+additionalProperties: false
+
+properties:
+
+  # ---------------------------------------------------------------------------
+  # METADATA
+  # ---------------------------------------------------------------------------
+  metadata:
+    type: object
+    required: [date, submitter]
+    additionalProperties: false
+    properties:
+      date:
+        type: string
+        pattern: "^\\d{4}-\\d{2}-\\d{2}$"
+        description: "ISO 8601 date the benchmark run was performed (YYYY-MM-DD)"
+      submitter:
+        type: string
+        minLength: 1
+        description: "Your name or GitHub handle"
+      repo_url:
+        type: string
+        description: "URL of the benchmarked codebase (omit for private codebases)"
+
+  # ---------------------------------------------------------------------------
+  # CODEBASE
+  # ---------------------------------------------------------------------------
+  codebase:
+    type: object
+    required: [stack, loc, files, description, complexity_tier]
+    additionalProperties: false
+    properties:
+      stack:
+        type: string
+        description: "Primary technology stack (e.g. FastAPI + React, Django + Vue, Rails)"
+      loc:
+        type: integer
+        minimum: 0
+        description: >
+          Lines of code counted with cloc or tokei, excluding generated files,
+          vendor directories, and migration files
+      files:
+        type: integer
+        minimum: 0
+        description: "Number of source files (same exclusions as loc)"
+      description:
+        type: string
+        description: >
+          One or two sentences covering: framework, database, approximate age,
+          notable characteristics (e.g. multi-tenant, event-sourced, 145 migrations)
+      complexity_tier:
+        type: string
+        enum: [XS, S, M, L, XL]
+        description: >
+          XS: <1k LOC, trivially simple structure.
+          S: 1k–5k LOC, single-purpose app.
+          M: 5k–20k LOC, modest production app.
+          L: 20k–100k LOC, full production system with multiple subsystems.
+          XL: >100k LOC, large-scale platform.
+
+  # ---------------------------------------------------------------------------
+  # HARDWARE
+  # For API models: describe the machine running the agent, not the remote server.
+  # tok_per_sec_* is what you measured at the client (output streaming speed).
+  # ---------------------------------------------------------------------------
+  hardware:
+    type: object
+    required: [device, memory_gb, memory_type, cpu, inference_engine, engine_version, tok_per_sec_generation]
+    additionalProperties: false
+    properties:
+      device:
+        type: string
+        description: "Machine name or model (e.g. ASUS GX10, MacBook Pro M3 Max, custom build)"
+      memory_gb:
+        type: number
+        minimum: 0
+        description: >
+          Primary inference memory in GB.
+          vram → GPU VRAM capacity.
+          ram+vram → GPU VRAM capacity (system RAM used for offloading).
+          unified → Apple Silicon unified memory.
+          system → local system RAM (CPU-only or API runs).
+      memory_type:
+        type: string
+        enum: [unified, vram, ram+vram, system]
+        description: >
+          unified: Apple Silicon unified memory.
+          vram: discrete GPU, model fits entirely in VRAM.
+          ram+vram: GPU VRAM + system RAM via CPU offloading.
+          system: system RAM only (CPU inference or API model — inference is remote).
+      gpu:
+        type: string
+        description: "GPU model and VRAM (e.g. NVIDIA GeForce RTX 4090 24GB GDDR6X). Omit for CPU-only."
+      cpu:
+        type: string
+        description: "CPU model (e.g. Intel Core i9-13900K, Apple M3 Max)"
+      inference_engine:
+        type: string
+        description: "Inference engine or API client (e.g. llama.cpp, Ollama, vLLM, Claude API)"
+      engine_version:
+        type: string
+        description: "Engine version or API model snapshot (e.g. 0.9.0, claude-sonnet-4-6-20251001)"
+      tok_per_sec_generation:
+        type: number
+        minimum: 0
+        description: >
+          Nominal token generation (output) speed in t/s for this model on this hardware.
+          Measure with a standalone benchmark before the run; this is the hardware baseline.
+      tok_per_sec_prefill:
+        type: number
+        minimum: 0
+        description: >
+          Prompt processing (prefill) speed in t/s. Optional but recommended for local models.
+          Difficult to measure accurately for API models — omit if unavailable.
+
+  # ---------------------------------------------------------------------------
+  # MODEL
+  # ---------------------------------------------------------------------------
+  model:
+    type: object
+    required: [name, architecture, total_params_b, quant, context_size_k, thinking_mode]
+    additionalProperties: false
+    properties:
+      name:
+        type: string
+        description: "Full model identifier (e.g. Qwen3.6-35B-A3B, claude-sonnet-4-6, gpt-4o-2024-11-20)"
+      architecture:
+        type: string
+        enum: [dense, moe]
+        description: >
+          dense: standard transformer (all parameters active per forward pass).
+          moe: mixture-of-experts (only a subset of parameters active per token).
+      total_params_b:
+        type: number
+        minimum: 0
+        description: >
+          Total parameter count in billions.
+          Use 0 if not publicly disclosed (e.g. closed API models).
+      active_params_b:
+        type: number
+        minimum: 0
+        description: >
+          Parameters active per forward pass, in billions.
+          Required for MoE models. Omit for dense models (equals total_params_b).
+      quant:
+        type: string
+        description: >
+          Quantization format (e.g. Q8_0, Q4_K_M, Q5_K_M, F16, BF16).
+          Use "API" for closed API models where quantization is unknown.
+      context_size_k:
+        type: integer
+        minimum: 1
+        description: "Maximum context window used in thousands of tokens (e.g. 128 for 128k)"
+      thinking_mode:
+        type: boolean
+        description: >
+          Whether extended thinking / chain-of-thought reasoning mode was enabled.
+          False for standard inference. True for models like QwQ-style or Claude's extended thinking.
+
+  # ---------------------------------------------------------------------------
+  # AGENT
+  # ---------------------------------------------------------------------------
+  agent:
+    type: object
+    required: [name, version]
+    additionalProperties: false
+    properties:
+      name:
+        type: string
+        description: "Agent framework (e.g. Claude Code, Aider, Cursor, Cline)"
+      version:
+        type: string
+        description: "Agent version string (e.g. 1.0.19)"
+
+  # ---------------------------------------------------------------------------
+  # RESULTS
+  # One entry per task run. Omit tasks you did not attempt.
+  # Minimum: 5 tasks from at least 2 categories (validated by validate.py).
+  # ---------------------------------------------------------------------------
+  results:
+    type: object
+    description: "Per-task results. Keys are task IDs (A1–D4)."
+    minProperties: 1
+    additionalProperties: false
+    properties:
+      A1: { "$ref": "#/definitions/task_result" }
+      A2: { "$ref": "#/definitions/task_result" }
+      A3: { "$ref": "#/definitions/task_result" }
+      B1: { "$ref": "#/definitions/task_result" }
+      B2: { "$ref": "#/definitions/task_result" }
+      B3: { "$ref": "#/definitions/task_result" }
+      C1: { "$ref": "#/definitions/task_result" }
+      C2: { "$ref": "#/definitions/task_result" }
+      C3: { "$ref": "#/definitions/task_result" }
+      D1: { "$ref": "#/definitions/task_result" }
+      D2: { "$ref": "#/definitions/task_result" }
+      D3: { "$ref": "#/definitions/task_result" }
+      D4: { "$ref": "#/definitions/task_result" }
+
+  # ---------------------------------------------------------------------------
+  # INTEGRITY
+  # ---------------------------------------------------------------------------
+  integrity:
+    type: object
+    required: [git_commit_hash, tok_per_sec_measured]
+    additionalProperties: false
+    properties:
+      git_commit_hash:
+        type: string
+        pattern: "^[0-9a-f]{40}$"
+        description: >
+          Full SHA-1 hash (40 hex characters) of the codebase HEAD commit at the
+          moment of testing. Run `git rev-parse HEAD` in the codebase directory.
+      tok_per_sec_measured:
+        type: number
+        minimum: 0
+        description: >
+          Actual measured generation speed (t/s) observed during this specific run.
+          Measure by timing several task responses and averaging.
+          May differ from hardware.tok_per_sec_generation due to prompt length,
+          thermal throttling, or concurrent load.
+
+# ---------------------------------------------------------------------------
+# SHARED DEFINITIONS
+# ---------------------------------------------------------------------------
+definitions:
+  task_result:
+    type: object
+    additionalProperties: false
+    properties:
+      time_seconds:
+        type: number
+        minimum: 0
+        description: >
+          Wall-clock seconds from the moment the prompt was submitted to when
+          the agent produced its final output (including any tool calls).
+      quality_1_to_5:
+        type: integer
+        minimum: 1
+        maximum: 5
+        description: >
+          Human-assigned quality score per scoring/rubric.md.
+          1=attempted but off-track, 3=acceptable, 5=excellent.
+          Omit if disqualified: true.
+      notes:
+        type: string
+        description: "Evaluator notes explaining the score or flagging unusual behavior"
+      disqualified:
+        type: boolean
+        description: >
+          Set to true if this task result should be excluded from score aggregates.
+          Reasons: evaluator gave hints, task was run more than once, prompt was modified.
+          Still include the entry so the run is documented as complete.

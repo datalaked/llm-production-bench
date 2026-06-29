@@ -101,15 +101,62 @@ Tasks are scored **0–5** by a human reviewer using the rubric in [`scoring/rub
 
 ---
 
-## How to Contribute Results
+## How to Submit Results
 
-1. Pick a real production codebase you have access to (your own project, an open-source repo, etc.)
-2. Run the tasks using the setup guide in [`setup/claude-code.md`](setup/claude-code.md)
-3. Score each task output using [`scoring/rubric.md`](scoring/rubric.md)
-4. Fill in [`scoring/results-template.md`](scoring/results-template.md)
-5. Submit via GitHub Issue using the [results template](.github/ISSUE_TEMPLATE/new-results.md) or open a PR adding your results file to `results/`
+Submissions are YAML files validated by a schema and a CI check. One file = one model on one codebase.
 
-See [`CONTRIBUTING.md`](CONTRIBUTING.md) for full instructions.
+### Quick start
+
+```bash
+# 1. Fork and clone this repository
+git clone https://github.com/your-handle/llm-production-bench
+cd llm-production-bench
+
+# 2. Copy the template
+cp submissions/template.yaml submissions/results/YYYY-MM-your-handle.yaml
+
+# 3. Fill in your run data (see field descriptions in submissions/schema.yaml)
+$EDITOR submissions/results/YYYY-MM-your-handle.yaml
+
+# 4. Validate locally before opening a PR
+pip install pyyaml jsonschema
+python submissions/validate.py submissions/results/YYYY-MM-your-handle.yaml
+
+# 5. Open a pull request — CI will re-validate automatically
+```
+
+### What goes in a submission
+
+| Section | Key fields |
+|---------|-----------|
+| `metadata` | date, submitter name, optional repo URL |
+| `codebase` | stack, LOC, file count, description, complexity tier (XS/S/M/L/XL) |
+| `hardware` | device, GPU/CPU, memory, inference engine and version, tok/s nominal |
+| `model` | name, architecture (dense/moe), params, quantization, context size, thinking mode |
+| `agent` | framework name and version (e.g. Claude Code 1.0.19) |
+| `results` | per-task: `time_seconds`, `quality_1_to_5` (1–5), `notes`, optional `disqualified` |
+| `integrity` | `git_commit_hash` of codebase at test time, `tok_per_sec_measured` (actual run average) |
+
+**Minimum coverage:** 5 tasks from at least 2 categories (A/B/C/D).
+
+### Scoring
+
+Score each task output **1–5** using the rubric in [`scoring/rubric.md`](scoring/rubric.md).
+The rubric's core question: *would a senior engineer on this codebase accept this output as-is?*
+
+Score your outputs honestly and don't re-run tasks — the benchmark's value depends on uncoached first-attempt results.
+
+### Validation
+
+The CI action ([`.github/workflows/validate-submissions.yml`](.github/workflows/validate-submissions.yml)) runs `validate.py` on every PR that touches `submissions/results/`. It checks:
+
+- Required fields and correct types against [`submissions/schema.yaml`](submissions/schema.yaml)
+- MoE models have `active_params_b < total_params_b`
+- Minimum 5 tasks from 2+ categories
+- Time × tok/s plausibility (catches unit errors like milliseconds vs seconds)
+- `git_commit_hash` is a valid 40-character SHA-1
+
+See [`CONTRIBUTING.md`](CONTRIBUTING.md) for the full submission guide.
 
 ---
 
@@ -126,19 +173,27 @@ See [`CONTRIBUTING.md`](CONTRIBUTING.md) for full instructions.
 ```
 llm-production-bench/
 ├── tasks/
-│   ├── A-reading/      # Category A task definitions
-│   ├── B-changes/      # Category B task definitions
-│   ├── C-reasoning/    # Category C task definitions
-│   └── D-production/   # Category D task definitions
+│   ├── A-reading/          # Category A task definitions
+│   ├── B-changes/          # Category B task definitions
+│   ├── C-reasoning/        # Category C task definitions
+│   └── D-production/       # Category D task definitions
 ├── scoring/
-│   ├── rubric.md       # Full 0-5 scoring rubric with examples
+│   ├── rubric.md           # Full 0-5 scoring rubric with examples
 │   └── results-template.md
 ├── setup/
-│   ├── claude-code.md  # Agent setup: Claude Code
-│   └── litellm-local.md # Running local models via LiteLLM proxy
-├── results/            # Community-submitted benchmark results
+│   ├── claude-code.md      # Agent setup: Claude Code
+│   └── litellm-local.md    # Running local models via LiteLLM proxy
+├── submissions/
+│   ├── schema.yaml         # JSONSchema for submission files
+│   ├── validate.py         # Submission validator (run before PR)
+│   ├── requirements.txt    # pyyaml + jsonschema
+│   ├── template.yaml       # Filled example submission
+│   └── results/            # Community-submitted YAML results
+│       └── datalaked-2026-06.yaml
 ├── CONTRIBUTING.md
 └── .github/
+    ├── workflows/
+    │   └── validate-submissions.yml   # CI: validates results on every PR
     └── ISSUE_TEMPLATE/
         └── new-results.md
 ```
